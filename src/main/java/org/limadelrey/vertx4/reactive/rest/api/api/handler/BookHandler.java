@@ -1,6 +1,7 @@
 package org.limadelrey.vertx4.reactive.rest.api.api.handler;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.ext.web.RoutingContext;
 import org.limadelrey.vertx4.reactive.rest.api.api.model.Book;
 import org.limadelrey.vertx4.reactive.rest.api.api.model.BookGetAllResponse;
@@ -33,6 +34,16 @@ public class BookHandler {
         final String limit = rc.queryParams().get(LIMIT_PARAMETER);
 
         return bookService.readAll(page, limit)
+                .onSuccess(success -> ResponseUtils.buildOkResponse(rc, success))
+                .onFailure(throwable -> ResponseUtils.buildErrorResponse(rc, throwable));
+    }
+
+    public void readAllz(RoutingContext rc) {
+        final String page = rc.queryParams().get(PAGE_PARAMETER);
+        final String limit = rc.queryParams().get(LIMIT_PARAMETER);
+        Promise<BookGetAllResponse> promise = Promise.promise();
+        bookService.readAll(page, limit, promise);
+        promise.future()
                 .onSuccess(success -> ResponseUtils.buildOkResponse(rc, success))
                 .onFailure(throwable -> ResponseUtils.buildErrorResponse(rc, throwable));
     }

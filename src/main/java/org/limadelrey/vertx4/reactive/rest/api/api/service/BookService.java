@@ -1,6 +1,8 @@
 package org.limadelrey.vertx4.reactive.rest.api.api.service;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.pgclient.PgPool;
@@ -43,7 +45,7 @@ public class BookService {
                     final int offset = QueryUtils.getOffset(page, limit);
 
                     return bookRepository.count(connection)
-                            .flatMap(total ->
+                            .compose(total ->
                                     bookRepository.selectAll(connection, limit, offset)
                                             .map(result -> {
                                                 final List<BookGetByIdResponse> books = result.stream()
@@ -56,6 +58,28 @@ public class BookService {
                 })
                 .onSuccess(success -> LOGGER.info(LogUtils.REGULAR_CALL_SUCCESS_MESSAGE.buildMessage("Read all books", success.getBooks())))
                 .onFailure(throwable -> LOGGER.error(LogUtils.REGULAR_CALL_ERROR_MESSAGE.buildMessage("Read all books", throwable.getMessage())));
+    }
+
+    public void readAll(String p, String l, Handler<AsyncResult<BookGetAllResponse>> replyHandler) {
+        dbClient.withTransaction(
+                        connection -> {
+                            final int page = QueryUtils.getPage(p);
+                            final int limit = QueryUtils.getLimit(l);
+                            final int offset = QueryUtils.getOffset(page, limit);
+
+                            return bookRepository.count(connection)
+                                    .compose(total ->
+                                            bookRepository.selectAll(connection, limit, offset)
+                                                    .onComplete(result -> {
+                                                        final List<BookGetByIdResponse> books = result.result().stream()
+                                                                .map(BookGetByIdResponse::new)
+                                                                .collect(Collectors.toList());
+
+                                                        replyHandler.handle(
+                                                                Future.succeededFuture(new BookGetAllResponse(total, limit, page, books)));
+                                                    })
+                                    );
+                        });
     }
 
     /**

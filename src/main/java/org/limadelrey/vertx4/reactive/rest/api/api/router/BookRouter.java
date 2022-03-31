@@ -39,6 +39,7 @@ public class BookRouter {
         final Router bookRouter = Router.router(vertx);
 
         bookRouter.route("/books*").handler(BodyHandler.create());
+        bookRouter.get("/bookz").handler(rc -> bookHandler.readAllz(rc));
         bookRouter.get("/books").handler(LoggerHandler.create(LoggerFormat.DEFAULT)).handler(bookValidationHandler.readAll()).handler(bookHandler::readAll);
         bookRouter.get("/books/:id").handler(LoggerHandler.create(LoggerFormat.DEFAULT)).handler(bookValidationHandler.readOne()).handler(bookHandler::readOne);
         bookRouter.post("/books").handler(LoggerHandler.create(LoggerFormat.DEFAULT)).handler(bookValidationHandler.create()).handler(bookHandler::create);
