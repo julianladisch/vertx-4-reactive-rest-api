@@ -9,7 +9,8 @@ jobs:
       - run: docker network create vertx-4-reactive-rest-api-network
       - run: docker-compose up &
       - run: mvn package -DskipTests
-      - run: java -jar target/vertx-4-reactive-rest-api-0.1-SNAPSHOT-fat.jar &
-      - run: curl http://localhost:8888/api/v1/books
+      - run: java -jar target/vertx-4-reactive-rest-api-0.1-SNAPSHOT-fat.jar > log &
+      - run: curl -sS http://localhost:8888/api/v1/books
       - run: sleep 10
-      - run: curl http://localhost:8888/api/v1/bookz
+      - run: curl -sS http://localhost:8888/api/v1/bookz
+      - run: cat log
