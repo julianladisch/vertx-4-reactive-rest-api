@@ -10,7 +10,9 @@ jobs:
       - run: docker-compose up &
       - run: mvn package -DskipTests
       - run: java -jar target/vertx-4-reactive-rest-api-0.1-SNAPSHOT-fat.jar > log 2>&1 &
-      - run: curl -sS http://localhost:8888/api/v1/books --retry-connrefused --retry 3
+      - run: sleep 10
+      - run: curl -sS http://localhost:8888/api/v1/books
       - run: sleep 10
       - run: curl -sS http://localhost:8888/api/v1/bookz
+      - run: sleep 10
       - run: cat log
