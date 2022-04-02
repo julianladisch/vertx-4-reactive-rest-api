@@ -70,16 +70,16 @@ public class BookService {
                             return bookRepository.count(connection)
                                     .compose(total ->
                                             bookRepository.selectAll(connection, limit, offset)
-                                                    .onComplete(result -> {
-                                                        final List<BookGetByIdResponse> books = result.result().stream()
+                                                    .map(result -> {
+                                                        final List<BookGetByIdResponse> books = result.stream()
                                                                 .map(BookGetByIdResponse::new)
                                                                 .collect(Collectors.toList());
 
-                                                        replyHandler.handle(
-                                                                Future.succeededFuture(new BookGetAllResponse(total, limit, page, books)));
+                                                        return new BookGetAllResponse(total, limit, page, books);
                                                     })
                                     );
-                        });
+                        })
+        .onComplete(replyHandler::handle);
     }
 
     /**
